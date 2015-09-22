@@ -7,8 +7,11 @@ import java.awt.Insets;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.net.URL;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -22,6 +25,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class MainWindow extends JFrame implements ActionListener{
 	private JPanel panel;
 	private JLabel labelOperation;
+	private String texto;
 	
 	public MainWindow(){
 		super();	
@@ -71,6 +75,54 @@ public class MainWindow extends JFrame implements ActionListener{
 		case getPassword:
 			JOptionPane.showMessageDialog(this, "Get password.", "Construction", JOptionPane.INFORMATION_MESSAGE); 
 		}
+	}
+	
+	/*
+	 * Metodo: Abrir o arquivo com a senha mestre cifrada.
+	 */
+	private void abrirArquivo() {
+        File arquivo = new File("src/SecPass/arquivos/arquivo.txt");
+        this.leArquivo(arquivo);
+	}
+
+	/*
+	 * Metodo: Le o arquivo que e passado como parametro e guarda na variavel texto.
+	 * @param File arquivo
+	 */
+	private void leArquivo(File arquivo) {
+		try{
+			FileReader reader = new FileReader(arquivo);
+			BufferedReader leitor = new BufferedReader(reader);
+			this.texto = "";
+			String linha;
+			while((linha = leitor.readLine()) != null){
+				this.texto+=linha + "\n";
+			}
+			leitor.close();
+			reader.close();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	/*
+	 * Metodo: Salvar um arquivo.
+	 */
+	private void salvarArquivo() {
+       	File arquivo = new File("src/SecPass/arquivos/arquivo.txt");
+        this.escreveArquivo(arquivo);
+	}
+
+	/* Metodo: Escreve no arquivo que consta em 'arquivo' o conteúdo do texto */
+	private void escreveArquivo(File arquivo) {
+		try{
+			FileOutputStream fos = new FileOutputStream(arquivo); 
+			fos.write(texto.getBytes()); 
+			fos.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
 	}
 
 }
