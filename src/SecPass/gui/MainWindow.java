@@ -16,6 +16,9 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import SecPass.gui.painel.AbstractPanel;
+import SecPass.gui.painel.LoginPanel;
+
 /**
 * @author Elanne Melilo de Souza 10101180
 * @author Ricardo Maurici Ferreira 10201015
@@ -64,10 +67,10 @@ public class MainWindow extends JFrame implements ActionListener{
 
 	public void actionPerformed(ActionEvent e) {
 		Options opcoes = Options.valueOf(e.getActionCommand());
-		
+		AbstractPanel panel = null;
 		switch(opcoes){
 		case Login:
-			JOptionPane.showMessageDialog(this, "Login information.", "Construction", JOptionPane.INFORMATION_MESSAGE);
+			panel = new LoginPanel();
 			break;
 		case newPassword:
 			JOptionPane.showMessageDialog(this, "Insert a new password.", "Construction", JOptionPane.INFORMATION_MESSAGE); 
@@ -75,6 +78,8 @@ public class MainWindow extends JFrame implements ActionListener{
 		case getPassword:
 			JOptionPane.showMessageDialog(this, "Get password.", "Construction", JOptionPane.INFORMATION_MESSAGE); 
 		}
+		setContentPane(panel);
+		pack();
 	}
 	
 	/*
@@ -113,7 +118,7 @@ public class MainWindow extends JFrame implements ActionListener{
         this.escreveArquivo(arquivo);
 	}
 
-	/* Metodo: Escreve no arquivo que consta em 'arquivo' o conteúdo do texto */
+	/* Metodo: Escreve no arquivo que consta em 'arquivo' o conteudo do texto */
 	private void escreveArquivo(File arquivo) {
 		try{
 			FileOutputStream fos = new FileOutputStream(arquivo); 
@@ -122,7 +127,6 @@ public class MainWindow extends JFrame implements ActionListener{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
 	}
 
 }
