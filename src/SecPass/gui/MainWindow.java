@@ -17,7 +17,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import SecPass.gui.painel.AbstractPanel;
-import SecPass.gui.painel.LoginPanel;
+import SecPass.gui.painel.NewPasswordPanel;
 
 /**
 * @author Elanne Melilo de Souza 10101180
@@ -69,11 +69,8 @@ public class MainWindow extends JFrame implements ActionListener{
 		Options opcoes = Options.valueOf(e.getActionCommand());
 		AbstractPanel panel = null;
 		switch(opcoes){
-		case Login:
-			panel = new LoginPanel();
-			break;
 		case newPassword:
-			JOptionPane.showMessageDialog(this, "Insert a new password.", "Construction", JOptionPane.INFORMATION_MESSAGE); 
+			panel = new NewPasswordPanel();
 			break;
 		case getPassword:
 			JOptionPane.showMessageDialog(this, "Get password.", "Construction", JOptionPane.INFORMATION_MESSAGE); 
