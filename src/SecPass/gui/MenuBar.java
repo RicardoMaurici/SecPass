@@ -18,15 +18,6 @@ public class MenuBar extends JMenuBar {
 		JMenu menu;
 		JMenuItem item;;
 		
-		menu=new JMenu("Login");
-		item=new JMenuItem("Login", KeyEvent.VK_T);
-		item.setAccelerator(KeyStroke.getKeyStroke(
-				KeyEvent.VK_1, ActionEvent.ALT_MASK));
-		item.setActionCommand(Options.Login.name());
-		item.addActionListener(mw);
-		menu.add(item);
-		add(menu);
-		
 		menu=new JMenu("Password");
 		item=new JMenuItem("New Password", KeyEvent.VK_T);
 		item.setAccelerator(KeyStroke.getKeyStroke(
