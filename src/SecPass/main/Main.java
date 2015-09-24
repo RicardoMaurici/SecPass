@@ -1,5 +1,7 @@
 package SecPass.main;
 
+import javax.swing.JOptionPane;
+
 import SecPass.gui.MainWindow;
 
 public class Main {

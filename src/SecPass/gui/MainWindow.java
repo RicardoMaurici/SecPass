@@ -19,6 +19,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import SecPass.gui.painel.AbstractPanel;
 import SecPass.gui.painel.GetPasswordPanel;
 import SecPass.gui.painel.NewPasswordPanel;
+import SecPass.logica.Logica;
 
 /**
 * @author Elanne Melilo de Souza 10101180
@@ -30,10 +31,41 @@ public class MainWindow extends JFrame implements ActionListener{
 	private JPanel panel;
 	private JLabel labelOperation;
 	private String texto;
+	private String[] conteudoArq;
+	private Integer interacoes;
+	private Logica logica;
 	
 	public MainWindow(){
-		super();	
+		super();
+		String pK = this.acesso();
+		//this.geraChaveDerivada(pK);
 		this.inicializar();
+	}
+
+	/*Esse metodo so e usado na primeira vez, para cifrar a chave que da acesso a tabela
+	 * private void geraChaveDerivada(String pK) {
+		try{
+			String senha = "INE56SecPac80";
+			String iv = "3cf39a538794b8364e09f131c16c9b1b";
+			String senhaDerivada = logica.geraChaveDerivada(senha, conteudoArq[0], interacoes);
+			String senhaFinal = logica.cifraGCM(pK, senhaDerivada, iv);
+			this.texto = conteudoArq[0]+"\n"+senhaFinal;
+			this.salvarArquivo();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}*/
+
+	private String acesso() {
+		//123SegurancA456
+		logica = new Logica();
+		this.interacoes = 10000;
+		String inputSenha = JOptionPane.showInputDialog(null, "Insira a senha do Gerenciador", "SENHA GERENCIADOR", JOptionPane.INFORMATION_MESSAGE);
+		this.abrirArquivo();
+		String masterKey = logica.geraChaveDerivada(inputSenha, conteudoArq[0], interacoes);
+		
+		return masterKey;
 	}
 
 	private void inicializar(){
@@ -47,6 +79,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
 		this.setVisible(true);
+		this.conteudoArq = new String[2];
 	}
 	
 	private void setInterfaceLayout() {
@@ -99,10 +132,11 @@ public class MainWindow extends JFrame implements ActionListener{
 			this.texto = "";
 			String linha;
 			while((linha = leitor.readLine()) != null){
-				this.texto+=linha + "\n";
+				this.texto+=linha + ":";
 			}
 			leitor.close();
 			reader.close();
+			conteudoArq = this.texto.split(":");
 		}catch (Exception e){
 			e.printStackTrace();
 		}
