@@ -19,6 +19,8 @@ import org.bouncycastle.crypto.params.AEADParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import SecPass.gui.MainWindow;
+
 public class Logica {
 	private static final int MAC_SIZE = 128;
 
@@ -36,7 +38,7 @@ public class Logica {
 		return Hex.encodeHexString(salt);
 	}
 
-	public String geraHMAC(String chaveDerivada, String sal) {
+	public String geraHMAC(String entradaCifrada, String chaveDerivada) {
 		String tag = "";
 		try {
 			int addProvider = Security.addProvider(new BouncyCastleProvider());
@@ -62,11 +64,10 @@ public class Logica {
 
 			byte[] input;
 
-			input = Hex.decodeHex(chaveDerivada.toCharArray());
+			input = Hex.decodeHex(entradaCifrada.toCharArray());
 
 			// Define a chave do HMac
-			KeyParameter key1 = new KeyParameter(Hex.decodeHex(sal
-					.toCharArray()));
+			KeyParameter key1 = new KeyParameter(Hex.decodeHex(chaveDerivada.toCharArray()));
 			umHmac.init(key1);
 
 			// Define a entrada do HMac
@@ -104,50 +105,26 @@ public class Logica {
 		return senhaDerivada;
 	}
 
-	public String cifraGCM(String pK, String textoPlano, String iv)
-			throws DecoderException {
-
-		// chave (K)
-		// String pK =
-		// "feffe9928665731c6d6a8f9467308308feffe9928665731c6d6a8f9467308308";
-		byte[] K = org.apache.commons.codec.binary.Hex.decodeHex(pK
-				.toCharArray());
-
-		// texto plano (P)
-		byte[] P = Hex.decodeHex(textoPlano.toCharArray()); // Mensagem de
-															// entrada
-
-		// nonce (IV)
-		// String pN;
-		// pN = "cafebabefacedbaddecaf888";
-		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv
-				.toCharArray());
-
-		// tag (T)
-		// = "b094dac5d93471bdec1a502270e3cc6c";
-
-		/**
-		 * String pC; pC = "522dc1f099567d07f47f37a32a84427d" +
-		 * "643a8cdcbfe5c0c97598a2bd2555d1aa" +
-		 * "8cb08e48590dbb3da7b08b1056828838" +
-		 * "c5f61e6393ba7a0abcc9f662898015ad" + T;
-		 */
-		// = org.apache.commons.codec.binary.Hex.decodeHex(pC.toCharArray());
-
-		// CIFRAR criando GCMBlockCipher
+	public String cifraGCM(String pK, String textoPlano, String iv) throws DecoderException {
+		//Recebe senha
+		byte[] K = org.apache.commons.codec.binary.Hex.decodeHex(pK.toCharArray());
+		//Recebe texto que deseja cifrar
+		byte[] P = Hex.decodeHex(textoPlano.toCharArray()); // Msg de entrada
+		//IV
+		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
 
 		// Instancia um GCM com AES usando o formato da BouncyCastle
 		GCMBlockCipher gcm = new GCMBlockCipher(new AESEngine());
 
-		// Parametros a serem passados para o GCM: chave, tamanho do mac, o
-		// nonce
+		// Parametros a passados para o GCM: chave, tamanho do mac, iv em bytes
 		KeyParameter key2 = new KeyParameter(K);
 		AEADParameters params = new AEADParameters(key2, MAC_SIZE, N);
 
-		// true para cifrar
+		// cifrando
 		gcm.init(true, params);
 		int outsize = gcm.getOutputSize(P.length);
 		byte[] outc = new byte[outsize];
+		
 		// processa os bytes calculando o offset para cifrar
 		int lengthOutc = gcm.processBytes(P, 0, P.length, outc, 0);
 
@@ -162,50 +139,38 @@ public class Logica {
 
 		// Recupera tag do GCM
 		byte[] encT1 = gcm.getMac();
-		System.out.println("Tag msg cifrada = \t\t"
-				+ Hex.encodeHexString(encT1));
+		System.out.println("Tag msg cifrada = \t\t" + Hex.encodeHexString(encT1));
 		
 		return Hex.encodeHexString(outc);
 
 	}
 
-	public void decifraGCM(String iv, String pK, byte[] textoCifrado)
-			throws Exception {
-
-		// nonce (IV)
-		// String pN;
-		// pN = "cafebabefacedbaddecaf888";
-		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv
-				.toCharArray());
-
-		// Instancia um GCM com AES usando o formato da BouncyCastle
+	public String decifraGCM(String iv, String pK, String textoCifrado, MainWindow ui) throws Exception {
+		// IV
+		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
+		
+		byte[] txtCifrado = org.apache.commons.codec.binary.Hex.decodeHex(textoCifrado.toCharArray());
 		GCMBlockCipher gcm = new GCMBlockCipher(new AESEngine());
 
-		// Parametros a serem passados para o GCM: chave, tamanho do mac, o
-		// nonce
+		// Parametros passados para o GCM: chave, tamanho do mac, o IV
 		KeyParameter key2 = new KeyParameter(Hex.decodeHex(pK.toCharArray()));
 		AEADParameters params = new AEADParameters(key2, MAC_SIZE, N);
 
-		// DECIFRAR usando GCMBlockCipher
-		// false para decifrar
+		// DECIFRAR usando GCMBlockCipher - false para decifrar
 		gcm.init(false, params);
 
-		int outsize2 = gcm.getOutputSize(textoCifrado.length);
+		int outsize2 = gcm.getOutputSize(txtCifrado.length);
 		byte[] out2 = new byte[outsize2];
-		int offOut2 = gcm.processBytes(textoCifrado, 0, textoCifrado.length,
+		int offOut2 = gcm.processBytes(txtCifrado, 0, txtCifrado.length,
 				out2, 0);
 		try {
 			gcm.doFinal(out2, offOut2);
 
 		} catch (InvalidCipherTextException e) {
-			e.printStackTrace();
+			ui.informaMsg("Senha inválida");
 		}
 
-		byte[] encT2 = gcm.getMac();
-		System.out.println("Tag senha cifrada modificada = \t"
-				+ Hex.encodeHexString(encT2));
-
-		String decifrado = new String(out2);
-		System.out.println("Msg decifrada = \t\t" + decifrado);
+		System.out.println("Msg decifrada = \t\t" + (Hex.encodeHexString(out2)));
+		return new String(out2);
 	}
 }

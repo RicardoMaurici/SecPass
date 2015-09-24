@@ -16,6 +16,10 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.apache.commons.codec.binary.Hex;
+
+
+
 import SecPass.gui.painel.AbstractPanel;
 import SecPass.gui.painel.GetPasswordPanel;
 import SecPass.gui.painel.NewPasswordPanel;
@@ -37,19 +41,31 @@ public class MainWindow extends JFrame implements ActionListener{
 	
 	public MainWindow(){
 		super();
-		String pK = this.acesso();
-		//this.geraChaveDerivada(pK);
+		this.setInterfaceLayout();
+		this.decifraDPK(this.acesso());
+		//this.geraChaveDerivada(pK);	
 		this.inicializar();
 	}
 
-	/*Esse metodo so e usado na primeira vez, para cifrar a chave que da acesso a tabela
-	 * private void geraChaveDerivada(String pK) {
+
+	private void decifraDPK(String pK) {
+		try {
+			logica.decifraGCM(conteudoArq[1], pK, conteudoArq[2], this);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*Esse metodo so e usado na primeira vez, para cifrar a chave que da acesso a tabela 
+	  private void geraChaveDerivada(String pK) {
+		  System.out.println("pK:"+pK);
 		try{
 			String senha = "INE56SecPac80";
 			String iv = "3cf39a538794b8364e09f131c16c9b1b";
 			String senhaDerivada = logica.geraChaveDerivada(senha, conteudoArq[0], interacoes);
+			System.out.println(senhaDerivada);
 			String senhaFinal = logica.cifraGCM(pK, senhaDerivada, iv);
-			this.texto = conteudoArq[0]+"\n"+senhaFinal;
+			this.texto = conteudoArq[0]+"\n"+iv+"\n"+senhaFinal;
 			this.salvarArquivo();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -61,15 +77,30 @@ public class MainWindow extends JFrame implements ActionListener{
 		//123SegurancA456
 		logica = new Logica();
 		this.interacoes = 10000;
-		String inputSenha = JOptionPane.showInputDialog(null, "Insira a senha do Gerenciador", "SENHA GERENCIADOR", JOptionPane.INFORMATION_MESSAGE);
-		this.abrirArquivo();
-		String masterKey = logica.geraChaveDerivada(inputSenha, conteudoArq[0], interacoes);
+		String inputSenha, masterKey = "";
+		JPanel panel = new JPanel();
+		JLabel label = new JLabel("Insira a senha do Gerenciador:");
+		JPasswordField pass = new JPasswordField(10);
+		panel.add(label);
+		panel.add(pass);
+		String[] options = new String[]{"Cancel", "OK"};
+		int option = JOptionPane.showOptionDialog(null, panel, "SENHA GERENCIADOR",
+		                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
+		                         null, options, options[1]);
+		if(option == 0){
+			System.exit(0);
+		    
+		}else{
+			inputSenha = new String(pass.getPassword());
+		    this.abrirArquivo();
+			masterKey = logica.geraChaveDerivada(inputSenha, conteudoArq[0], interacoes);
+		}
+		//String inputSenha = JOptionPane.showInputDialog(null, "Insira a senha do Gerenciador", "SENHA GERENCIADOR", JOptionPane.INFORMATION_MESSAGE);
 		
 		return masterKey;
 	}
 
 	private void inicializar(){
-		this.setInterfaceLayout();
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setJMenuBar(new MenuBar(this));
 		this.setContentPane(this.getPane());
@@ -120,6 +151,14 @@ public class MainWindow extends JFrame implements ActionListener{
         File arquivo = new File("src/SecPass/arquivos/arquivo.txt");
         this.leArquivo(arquivo);
 	}
+	
+	/*
+	 * Metodo: Abrir o arquivo com a tabela.
+	 */
+	private void abrirArquivoTabela() {
+        File arquivo = new File("src/SecPass/arquivos/arquivoTabela.txt");
+        this.leArquivo(arquivo);
+	}
 
 	/*
 	 * Metodo: Le o arquivo que e passado como parametro e guarda na variavel texto.
@@ -149,6 +188,14 @@ public class MainWindow extends JFrame implements ActionListener{
        	File arquivo = new File("src/SecPass/arquivos/arquivo.txt");
         this.escreveArquivo(arquivo);
 	}
+	
+	/*
+	 * Metodo: Salvar o arquivo com a Tabela.
+	 */
+	private void salvarArquivoTabela() {
+       	File arquivo = new File("src/SecPass/arquivos/arquivoTabela.txt");
+        this.escreveArquivo(arquivo);
+	}
 
 	/* Metodo: Escreve no arquivo que consta em 'arquivo' o conteudo do texto */
 	private void escreveArquivo(File arquivo) {
@@ -159,6 +206,11 @@ public class MainWindow extends JFrame implements ActionListener{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+
+	public void informaMsg(String msg) {
+		JOptionPane.showMessageDialog(this, msg, "ERRO", JOptionPane.ERROR_MESSAGE);
+		System.exit(0);
 	}
 
 }
