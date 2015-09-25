@@ -3,11 +3,9 @@ package SecPass.logica;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
-
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -18,8 +16,13 @@ import org.bouncycastle.crypto.modes.GCMBlockCipher;
 import org.bouncycastle.crypto.params.AEADParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import SecPass.gui.MainWindow;
+
+/**
+* @author Elanne Melilo de Souza 10101180
+* @author Ricardo Maurici Ferreira 10201015
+* Date 21/09/2015
+*/
 
 public class Logica {
 	private static final int MAC_SIZE = 128;
@@ -54,13 +57,7 @@ public class Logica {
 			// Instancia o HMac e passa o digest como parâmetro
 			HMac umHmac = new HMac(digest);
 
-			System.out.println("Nome do SHA = " + digest.getAlgorithmName());
-			System.out.println("Nome do algoritmo de MAC = "
-					+ umHmac.getAlgorithmName());
-			System.out.println("Tamanho do MAC = " + umHmac.getMacSize());
-
 			byte[] resBuf1 = new byte[umHmac.getMacSize()];
-			byte[] resBuf2 = new byte[umHmac.getMacSize()];
 
 			byte[] input;
 
@@ -78,10 +75,8 @@ public class Logica {
 
 			System.out.println("Mensagem 1 = " + Hex.encodeHexString(input));
 			tag = new String(Hex.encodeHex(resBuf1));
-			System.out.println("HMAC da Mensagem 1 = "
-					+ new String(Hex.encodeHex(resBuf1)));
+			System.out.println("HMAC da Mensagem 1 = "+ new String(Hex.encodeHex(resBuf1)));
 		} catch (DecoderException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -107,9 +102,9 @@ public class Logica {
 
 	public String cifraGCM(String pK, String textoPlano, String iv) throws DecoderException {
 		//Recebe senha
-		byte[] K = org.apache.commons.codec.binary.Hex.decodeHex(pK.toCharArray());
+		byte[] K = pK.getBytes();
 		//Recebe texto que deseja cifrar
-		byte[] P = Hex.decodeHex(textoPlano.toCharArray()); // Msg de entrada
+		byte[] P = textoPlano.getBytes(); // Msg de entrada
 		//IV
 		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
 
@@ -145,7 +140,7 @@ public class Logica {
 
 	}
 
-	public String decifraGCM(String iv, String pK, String textoCifrado, MainWindow ui) throws Exception {
+	public String decifraGCM(String pK, String iv, String textoCifrado, MainWindow ui) throws Exception {
 		// IV
 		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
 		
@@ -171,6 +166,6 @@ public class Logica {
 		}
 
 		System.out.println("Msg decifrada = \t\t" + (Hex.encodeHexString(out2)));
-		return new String(out2);
+		return Hex.encodeHexString(out2);
 	}
 }

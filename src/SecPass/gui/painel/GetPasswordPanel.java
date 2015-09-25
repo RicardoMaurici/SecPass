@@ -11,6 +11,12 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+/**
+* @author Elanne Melilo de Souza 10101180
+* @author Ricardo Maurici Ferreira 10201015
+* Date 20/09/2015
+*/
+
 public class GetPasswordPanel extends AbstractPanel {
 
 	private static final long serialVersionUID = 1L;

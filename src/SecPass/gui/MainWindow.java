@@ -2,28 +2,22 @@ package SecPass.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.net.URL;
+import java.util.ArrayList;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.apache.commons.codec.binary.Hex;
-
-
+import org.apache.commons.codec.DecoderException;
 
 import SecPass.gui.painel.AbstractPanel;
 import SecPass.gui.painel.GetPasswordPanel;
 import SecPass.gui.painel.NewPasswordPanel;
 import SecPass.logica.Logica;
+import SecPass.logica.Tabela;
 
 /**
 * @author Elanne Melilo de Souza 10101180
@@ -38,19 +32,23 @@ public class MainWindow extends JFrame implements ActionListener{
 	private String[] conteudoArq;
 	private Integer interacoes;
 	private Logica logica;
-	
+	private ArrayList<Tabela> tabela;
+	private String pk;
 	public MainWindow(){
 		super();
 		this.setInterfaceLayout();
-		this.decifraDPK(this.acesso());
+		this.decifraDPK();
+		tabela = new ArrayList<Tabela>();
+		abrirArquivoTabela();
 		//this.geraChaveDerivada(pK);	
 		this.inicializar();
 	}
 
 
-	private void decifraDPK(String pK) {
+	private void decifraDPK() {
+		pk = this.acesso();
 		try {
-			logica.decifraGCM(conteudoArq[1], pK, conteudoArq[2], this);
+			logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -95,12 +93,11 @@ public class MainWindow extends JFrame implements ActionListener{
 		    this.abrirArquivo();
 			masterKey = logica.geraChaveDerivada(inputSenha, conteudoArq[0], interacoes);
 		}
-		//String inputSenha = JOptionPane.showInputDialog(null, "Insira a senha do Gerenciador", "SENHA GERENCIADOR", JOptionPane.INFORMATION_MESSAGE);
 		
 		return masterKey;
 	}
 
-	private void inicializar(){
+	public void inicializar(){
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setJMenuBar(new MenuBar(this));
 		this.setContentPane(this.getPane());
@@ -110,7 +107,6 @@ public class MainWindow extends JFrame implements ActionListener{
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
 		this.setVisible(true);
-		this.conteudoArq = new String[2];
 	}
 	
 	private void setInterfaceLayout() {
@@ -135,7 +131,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		AbstractPanel panel = null;
 		switch(opcoes){
 		case newPassword:
-			panel = new NewPasswordPanel();
+			panel = new NewPasswordPanel(this);
 			break;
 		case getPassword:
 			panel = new GetPasswordPanel();
@@ -157,7 +153,29 @@ public class MainWindow extends JFrame implements ActionListener{
 	 */
 	private void abrirArquivoTabela() {
         File arquivo = new File("src/SecPass/arquivos/arquivoTabela.txt");
-        this.leArquivo(arquivo);
+        try{
+			FileReader reader = new FileReader(arquivo);
+			BufferedReader leitor = new BufferedReader(reader);
+			this.texto = "";
+			String linha;
+			while((linha = leitor.readLine()) != null){
+				this.texto+=linha + ":";
+			}
+			leitor.close();
+			reader.close();
+			String[] conteudo = this.texto.split(":");
+			if(conteudo.length>=3){
+				for(int i=0; i<conteudo.length; i+=3){
+					Tabela itemTabela = new Tabela();
+					itemTabela.setHmac(conteudo[i]);
+					itemTabela.setChaveCifrada(conteudo[i+1]);
+					itemTabela.setValorCifrado(conteudo[i+2]);
+					this.tabela.add(itemTabela);
+					}
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	/*
@@ -211,6 +229,37 @@ public class MainWindow extends JFrame implements ActionListener{
 	public void informaMsg(String msg) {
 		JOptionPane.showMessageDialog(this, msg, "ERRO", JOptionPane.ERROR_MESSAGE);
 		System.exit(0);
+	}
+
+
+	public String getTexto() {
+		return texto;
+	}
+
+
+	public void setTexto(String texto) {
+		this.texto = texto;
+	}
+
+
+	public void cifra(String dominio, String valor) {
+		Tabela itemTabela = new Tabela();
+		try {
+			String dpk = logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
+			
+			itemTabela.setChaveCifrada(logica.cifraGCM(dpk, dominio, conteudoArq[1]));
+			itemTabela.setHmac(logica.geraHMAC(itemTabela.getChaveCifrada(), logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this)));
+			System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);
+			itemTabela.setValorCifrado(logica.cifraGCM(itemTabela.getHmac().substring(0, 16), valor, conteudoArq[1]));
+			this.tabela.add(itemTabela);
+			System.out.println(this.tabela.size());
+			System.out.println(itemTabela.getChaveCifrada());
+			System.out.println(itemTabela.getHmac());
+			System.out.println(itemTabela.getValorCifrado());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 }

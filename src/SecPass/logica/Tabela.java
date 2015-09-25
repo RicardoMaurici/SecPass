@@ -1,5 +1,11 @@
 package SecPass.logica;
 
+/**
+* @author Elanne Melilo de Souza 10101180
+* @author Ricardo Maurici Ferreira 10201015
+* Date 24/09/2015
+*/
+
 public class Tabela {
 	private String chaveCifrada;
 	private String valorCifrado;

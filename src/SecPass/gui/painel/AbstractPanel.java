@@ -9,6 +9,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+/**
+* @author Elanne Melilo de Souza 10101180
+* @author Ricardo Maurici Ferreira 10201015
+* Date 20/09/2015
+*/
+
 public abstract class AbstractPanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;

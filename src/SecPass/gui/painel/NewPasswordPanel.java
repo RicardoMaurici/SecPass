@@ -11,15 +11,25 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import SecPass.gui.MainWindow;
+
+/**
+* @author Elanne Melilo de Souza 10101180
+* @author Ricardo Maurici Ferreira 10201015
+* Date 21/09/2015
+*/
+
 public class NewPasswordPanel extends AbstractPanel {
 
 	private static final long serialVersionUID = 1L;
 	private JLabel labelDominio, labelPassword;
 	private JTextField tfDominio, tfPassword;
 	private JButton clearButton;
+	private MainWindow ui;
 
-	public NewPasswordPanel() {
+	public NewPasswordPanel(MainWindow ui) {
 		super("New Password", new JButton("Save"));
+		this.ui = ui;
 		defineComponents();
 		adjustComponents();
 	}
@@ -74,8 +84,10 @@ public class NewPasswordPanel extends AbstractPanel {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
+		if (e.getSource() == submitButton) { //acionou salvar
+			ui.cifra(tfDominio.getText(), tfPassword.getText());
+			ui.inicializar();
+		}
 	}
 
 }
