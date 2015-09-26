@@ -2,14 +2,13 @@ package SecPass.gui.painel;
 
 import static javax.swing.GroupLayout.Alignment.BASELINE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
-
 import java.awt.event.ActionEvent;
-
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import SecPass.gui.MainWindow;
 
 /**
 * @author Elanne Melilo de Souza 10101180
@@ -23,11 +22,13 @@ public class GetPasswordPanel extends AbstractPanel {
 	private JLabel labelDominio, labelPassword;
 	private JTextField tfDominio, tfPassword;
 	private JButton clearButton;
+	private MainWindow ui;
 	
-	public GetPasswordPanel() {
-		super("Get Password", new JButton("Ok"));
+	public GetPasswordPanel(MainWindow ui) {
+		super("Get Password", new JButton("Search"));
 		defineComponents();
 		adjustComponents();
+		this.ui = ui;
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public class GetPasswordPanel extends AbstractPanel {
 		clearButton = new JButton("Clear");
 		tfPassword.setEnabled(false);
 		clearButton.addActionListener(this);
-		submitButton.addActionListener(this);
+		//submitButton.addActionListener(this);
 	}
 
 	@Override
@@ -81,7 +82,13 @@ public class GetPasswordPanel extends AbstractPanel {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		if(e.getSource()==submitButton){
+			String valor = ui.decifra(tfDominio.getText());
+			if(valor!=null)
+				tfPassword.setText(valor);
+			else
+				ui.informaMsg("Dominio não encontrado");
+		}
 		
 	}
 

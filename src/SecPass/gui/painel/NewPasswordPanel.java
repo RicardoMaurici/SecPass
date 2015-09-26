@@ -42,7 +42,7 @@ public class NewPasswordPanel extends AbstractPanel {
 		tfPassword = new JPasswordField(6);
 		clearButton = new JButton("Clear");
 		clearButton.addActionListener(this);
-		submitButton.addActionListener(this);
+		//submitButton.addActionListener(this);
 	}
 
 	@Override

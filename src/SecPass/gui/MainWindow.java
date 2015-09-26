@@ -8,11 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.util.ArrayList;
-
 import javax.swing.*;
-
-import org.apache.commons.codec.DecoderException;
-
 import SecPass.gui.painel.AbstractPanel;
 import SecPass.gui.painel.GetPasswordPanel;
 import SecPass.gui.painel.NewPasswordPanel;
@@ -33,20 +29,22 @@ public class MainWindow extends JFrame implements ActionListener{
 	private Integer interacoes;
 	private Logica logica;
 	private ArrayList<Tabela> tabela;
-	private String pk;
+	//private String pk;
 	public MainWindow(){
 		super();
 		this.setInterfaceLayout();
+		//pk = this.acesso();
+		//this.geraChaveDerivada();
 		this.decifraDPK();
 		tabela = new ArrayList<Tabela>();
 		abrirArquivoTabela();
-		//this.geraChaveDerivada(pK);	
+		//this.geraChaveDerivada();	
 		this.inicializar();
 	}
 
 
 	private void decifraDPK() {
-		pk = this.acesso();
+		String pk = this.acesso();
 		try {
 			logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
 		} catch (Exception e) {
@@ -55,24 +53,23 @@ public class MainWindow extends JFrame implements ActionListener{
 	}
 
 	/*Esse metodo so e usado na primeira vez, para cifrar a chave que da acesso a tabela 
-	  private void geraChaveDerivada(String pK) {
-		  System.out.println("pK:"+pK);
+	  private void geraChaveDerivada() {
+		  //System.out.println("pK:"+pk);
 		try{
 			String senha = "INE56SecPac80";
 			String iv = "3cf39a538794b8364e09f131c16c9b1b";
 			String senhaDerivada = logica.geraChaveDerivada(senha, conteudoArq[0], interacoes);
-			System.out.println(senhaDerivada);
-			String senhaFinal = logica.cifraGCM(pK, senhaDerivada, iv);
+			//System.out.println(senhaDerivada);
+			String senhaFinal = logica.cifraGCM(pk, senhaDerivada, iv);
 			this.texto = conteudoArq[0]+"\n"+iv+"\n"+senhaFinal;
 			this.salvarArquivo();
 		}catch(Exception e){
 			e.printStackTrace();
-		}
-		
-	}*/
-
+		}		
+	}
+*/
 	private String acesso() {
-		//123SegurancA456
+		//123Seguranca456
 		logica = new Logica();
 		this.interacoes = 10000;
 		String inputSenha, masterKey = "";
@@ -134,7 +131,7 @@ public class MainWindow extends JFrame implements ActionListener{
 			panel = new NewPasswordPanel(this);
 			break;
 		case getPassword:
-			panel = new GetPasswordPanel();
+			panel = new GetPasswordPanel(this);
 		}
 		setContentPane(panel);
 		pack();
@@ -212,10 +209,14 @@ public class MainWindow extends JFrame implements ActionListener{
 	 */
 	private void salvarArquivoTabela() {
        	File arquivo = new File("src/SecPass/arquivos/arquivoTabela.txt");
+       	texto = "";
+       	for(Tabela itemTabela: this.tabela){
+       		texto+=itemTabela.getHmac()+"\n"+itemTabela.getChaveCifrada()+"\n"+itemTabela.getValorCifrado()+"\n";
+       	}
         this.escreveArquivo(arquivo);
 	}
 
-	/* Metodo: Escreve no arquivo que consta em 'arquivo' o conteudo do texto */
+	/* Metodo: Escreve no arquivo, que consta em 'arquivo', o conteudo do texto */
 	private void escreveArquivo(File arquivo) {
 		try{
 			FileOutputStream fos = new FileOutputStream(arquivo); 
@@ -228,7 +229,6 @@ public class MainWindow extends JFrame implements ActionListener{
 
 	public void informaMsg(String msg) {
 		JOptionPane.showMessageDialog(this, msg, "ERRO", JOptionPane.ERROR_MESSAGE);
-		System.exit(0);
 	}
 
 
@@ -243,23 +243,43 @@ public class MainWindow extends JFrame implements ActionListener{
 
 
 	public void cifra(String dominio, String valor) {
+		String pk = this.acesso();
 		Tabela itemTabela = new Tabela();
 		try {
 			String dpk = logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
-			
 			itemTabela.setChaveCifrada(logica.cifraGCM(dpk, dominio, conteudoArq[1]));
 			itemTabela.setHmac(logica.geraHMAC(itemTabela.getChaveCifrada(), logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this)));
-			System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);
-			itemTabela.setValorCifrado(logica.cifraGCM(itemTabela.getHmac().substring(0, 16), valor, conteudoArq[1]));
+			//System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);	
+			itemTabela.setValorCifrado(logica.cifraGCM(logica.geraChaveDerivada(itemTabela.getHmac().substring(0, 16), conteudoArq[0], interacoes), valor, conteudoArq[1]));
 			this.tabela.add(itemTabela);
-			System.out.println(this.tabela.size());
-			System.out.println(itemTabela.getChaveCifrada());
-			System.out.println(itemTabela.getHmac());
-			System.out.println(itemTabela.getValorCifrado());
+			salvarArquivoTabela();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public String decifra(String dominio) {
+		String pk = this.acesso();
+		Tabela itemTabela = null;
+		try {
+			String dpk = logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
+			dominio = (logica.cifraGCM(dpk, dominio, conteudoArq[1]));
+			String mac = (logica.geraHMAC(dominio, logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this)));
+			for(Tabela itemTabela1:this.tabela){
+				if(itemTabela1.getHmac().equals(mac))
+					itemTabela=itemTabela1;
+			}
+			if(itemTabela != null)
+				return logica.decifraGCM(logica.geraChaveDerivada(itemTabela.getHmac().substring(0, 16), conteudoArq[0], interacoes), conteudoArq[1], itemTabela.getValorCifrado(), this);
+			//System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);
+			//itemTabela.setValorCifrado(logica.cifraGCM(itemTabela.getHmac().substring(0, 16), valor, conteudoArq[1]));
+			//this.tabela.add(itemTabela);
+			//salvarArquivoTabela();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }
