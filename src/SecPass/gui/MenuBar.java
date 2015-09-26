@@ -32,6 +32,14 @@ public class MenuBar extends JMenuBar {
 		item.setActionCommand(Options.getPassword.name());
 		item.addActionListener(mw);
 		menu.add(item);
-		add(menu);	
+		add(menu);
+		
+		item=new JMenuItem("Remove Password", KeyEvent.VK_T);
+		item.setAccelerator(KeyStroke.getKeyStroke(
+				KeyEvent.VK_4, ActionEvent.ALT_MASK));
+		item.setActionCommand(Options.removePassword.name());
+		item.addActionListener(mw);
+		menu.add(item);
+		add(menu);
 	}
 }

@@ -8,10 +8,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.util.ArrayList;
+
 import javax.swing.*;
+
 import SecPass.gui.painel.AbstractPanel;
 import SecPass.gui.painel.GetPasswordPanel;
 import SecPass.gui.painel.NewPasswordPanel;
+import SecPass.gui.painel.RemovePasswordPanel;
 import SecPass.logica.Logica;
 import SecPass.logica.Tabela;
 
@@ -129,6 +132,9 @@ public class MainWindow extends JFrame implements ActionListener{
 		switch(opcoes){
 		case newPassword:
 			panel = new NewPasswordPanel(this);
+			break;
+		case removePassword:
+			panel = new RemovePasswordPanel(this);
 			break;
 		case getPassword:
 			panel = new GetPasswordPanel(this);
@@ -280,6 +286,31 @@ public class MainWindow extends JFrame implements ActionListener{
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+
+	public boolean remove(String dominio, String valor) {
+		String pk = this.acesso();
+		Tabela itemTabela = new Tabela();
+		boolean removido=false;
+		try {
+			String dpk = logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
+			itemTabela.setChaveCifrada(logica.cifraGCM(dpk, dominio, conteudoArq[1]));
+			itemTabela.setHmac(logica.geraHMAC(itemTabela.getChaveCifrada(), logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this)));
+			//System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);	
+			itemTabela.setValorCifrado(logica.cifraGCM(logica.geraChaveDerivada(itemTabela.getHmac().substring(0, 16), conteudoArq[0], interacoes), valor, conteudoArq[1]));
+			for(int i=0; i<this.tabela.size(); i++){
+				if(this.tabela.get(i).getValorCifrado().equals(itemTabela.getValorCifrado())){
+					this.tabela.remove(i);
+					salvarArquivoTabela();
+					removido=true;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return removido;
 	}
 
 }
