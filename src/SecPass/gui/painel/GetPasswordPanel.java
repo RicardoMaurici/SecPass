@@ -25,7 +25,7 @@ public class GetPasswordPanel extends AbstractPanel {
 	private MainWindow ui;
 	
 	public GetPasswordPanel(MainWindow ui) {
-		super("Get Password", new JButton("Search"));
+		super("Retorna Senha", new JButton("Buscar"));
 		defineComponents();
 		adjustComponents();
 		this.ui = ui;
@@ -34,13 +34,12 @@ public class GetPasswordPanel extends AbstractPanel {
 	@Override
 	public void defineComponents() {
 		labelDominio = new JLabel("Dominio:");
-		labelPassword = new JLabel("Password:");
+		labelPassword = new JLabel("Senha:");
 		tfDominio = new JTextField();
 		tfPassword = new JTextField();
-		clearButton = new JButton("Clear");
+		clearButton = new JButton("Limpar");
 		tfPassword.setEnabled(false);
 		clearButton.addActionListener(this);
-		//submitButton.addActionListener(this);
 	}
 
 	@Override
@@ -87,7 +86,10 @@ public class GetPasswordPanel extends AbstractPanel {
 			if(valor!=null)
 				tfPassword.setText(valor);
 			else
-				ui.informaMsg("Dominio n„o encontrado");
+				ui.informaMsg("Dominio n√£o encontrado");
+		}else if(e.getSource()==clearButton){
+			tfDominio.setText("");
+			tfPassword.setText("");
 		}
 		
 	}

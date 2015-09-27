@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
@@ -28,7 +29,7 @@ public class NewPasswordPanel extends AbstractPanel {
 	private MainWindow ui;
 
 	public NewPasswordPanel(MainWindow ui) {
-		super("New Password", new JButton("Save"));
+		super("Nova Senha", new JButton("Gravar"));
 		this.ui = ui;
 		defineComponents();
 		adjustComponents();
@@ -37,10 +38,10 @@ public class NewPasswordPanel extends AbstractPanel {
 	@Override
 	public void defineComponents() {
 		labelDominio = new JLabel("Dominio:");
-		labelPassword = new JLabel("Password:");
+		labelPassword = new JLabel("Senha:");
 		tfDominio = new JTextField();
 		tfPassword = new JPasswordField(6);
-		clearButton = new JButton("Clear");
+		clearButton = new JButton("Limpar");
 		clearButton.addActionListener(this);
 		//submitButton.addActionListener(this);
 	}
@@ -84,10 +85,16 @@ public class NewPasswordPanel extends AbstractPanel {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == submitButton) { //acionou salvar
+		if (e.getSource() == submitButton && !tfDominio.getText().equals("") && !tfPassword.getText().equals("")) { //acionou salvar
 			ui.cifra(tfDominio.getText(), tfPassword.getText());
-			ui.inicializar();
-		}
+			tfDominio.setText("");
+			tfPassword.setText("");
+			JOptionPane.showMessageDialog(null, "Gravado com sucesso!", "SUCESSO", JOptionPane.INFORMATION_MESSAGE);
+		}else if(e.getSource() == clearButton){
+			tfDominio.setText("");
+			tfPassword.setText("");
+		}else
+			ui.informaMsg("Campos sem valores");
 	}
 
 }

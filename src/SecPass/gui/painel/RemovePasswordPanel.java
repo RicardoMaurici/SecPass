@@ -25,7 +25,7 @@ public class RemovePasswordPanel extends AbstractPanel {
 	private MainWindow ui;
 
 	public RemovePasswordPanel(MainWindow ui) {
-		super("Remove Password", new JButton("Remove"));
+		super("Remove Senha", new JButton("Remover"));
 		this.ui = ui;
 		defineComponents();
 		adjustComponents();
@@ -34,10 +34,10 @@ public class RemovePasswordPanel extends AbstractPanel {
 	@Override
 	public void defineComponents() {
 		labelDominio = new JLabel("Dominio:");
-		labelPassword = new JLabel("Password:");
+		labelPassword = new JLabel("Senha:");
 		tfDominio = new JTextField();
 		tfPassword = new JPasswordField(6);
-		clearButton = new JButton("Clear");
+		clearButton = new JButton("Limpar");
 		clearButton.addActionListener(this);
 	}
 
@@ -85,8 +85,11 @@ public class RemovePasswordPanel extends AbstractPanel {
 				ui.informaMsg("Deletado");
 				ui.inicializar();
 			}else{
-				ui.informaMsg("Não deletado");
+				ui.informaMsg("NÃ£o deletado");
 			}
+		}else if(e.getSource() == clearButton){
+			tfDominio.setText("");
+			tfPassword.setText("");
 		}
 	}
 

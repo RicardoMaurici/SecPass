@@ -18,15 +18,15 @@ public class MenuBar extends JMenuBar {
 		JMenu menu;
 		JMenuItem item;;
 		
-		menu=new JMenu("Password");
-		item=new JMenuItem("New Password", KeyEvent.VK_T);
+		menu=new JMenu("Senha");
+		item=new JMenuItem("Nova Senha", KeyEvent.VK_T);
 		item.setAccelerator(KeyStroke.getKeyStroke(
 				KeyEvent.VK_2, ActionEvent.ALT_MASK));
 		item.setActionCommand(Options.newPassword.name());
 		item.addActionListener(mw);
 		menu.add(item);
 		
-		item=new JMenuItem("Get Password", KeyEvent.VK_T);
+		item=new JMenuItem("Retorna Senha", KeyEvent.VK_T);
 		item.setAccelerator(KeyStroke.getKeyStroke(
 				KeyEvent.VK_3, ActionEvent.ALT_MASK));
 		item.setActionCommand(Options.getPassword.name());
@@ -34,10 +34,27 @@ public class MenuBar extends JMenuBar {
 		menu.add(item);
 		add(menu);
 		
-		item=new JMenuItem("Remove Password", KeyEvent.VK_T);
+		item=new JMenuItem("Remove Senha", KeyEvent.VK_T);
 		item.setAccelerator(KeyStroke.getKeyStroke(
 				KeyEvent.VK_4, ActionEvent.ALT_MASK));
 		item.setActionCommand(Options.removePassword.name());
+		item.addActionListener(mw);
+		menu.add(item);
+		add(menu);
+		
+		item=new JMenuItem("Iniciar Tabela", KeyEvent.VK_T);
+		item.setAccelerator(KeyStroke.getKeyStroke(
+				KeyEvent.VK_5, ActionEvent.ALT_MASK));
+		item.setActionCommand(Options.removeAllPassword.name());
+		item.addActionListener(mw);
+		menu.add(item);
+		add(menu);
+		
+		menu=new JMenu("Sobre");
+		item=new JMenuItem("Trabalho e Equipe", KeyEvent.VK_T);
+		item.setAccelerator(KeyStroke.getKeyStroke(
+				KeyEvent.VK_1, ActionEvent.ALT_MASK));
+		item.setActionCommand(Options.about.name());
 		item.addActionListener(mw);
 		menu.add(item);
 		add(menu);

@@ -7,8 +7,9 @@ package SecPass.gui;
 */
 
 public enum Options {
-	Login,
 	newPassword,
 	getPassword,
-	removePassword
+	removePassword,
+	removeAllPassword,
+	about
 }

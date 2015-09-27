@@ -32,20 +32,85 @@ public class MainWindow extends JFrame implements ActionListener{
 	private Integer interacoes;
 	private Logica logica;
 	private ArrayList<Tabela> tabela;
-	//private String pk;
+	
 	public MainWindow(){
 		super();
 		this.setInterfaceLayout();
-		//pk = this.acesso();
 		//this.geraChaveDerivada();
 		this.decifraDPK();
 		tabela = new ArrayList<Tabela>();
 		abrirArquivoTabela();
-		//this.geraChaveDerivada();	
 		this.inicializar();
 	}
 
+	/*
+	 * Metodo: Inicializa os componentes da interface principal
+	 */
+	public void inicializar(){
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.setJMenuBar(new MenuBar(this));
+		this.setContentPane(this.getPane());
+		this.setSize(400,200);
+		this.setMinimumSize(new Dimension(400,200));
+		this.setTitle("Secure Password");
+		this.setLocationRelativeTo(null);
+		this.setResizable(false);
+		this.setVisible(true);
+	}
+	
+	/*
+	 * Metodo: Define Layout da Interface
+	 */
+	private void setInterfaceLayout() {
+		try{
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
+	/*
+	 * Metodo: Define componentes do painel
+	 */
+	private JPanel getPane(){
+		this.panel = new JPanel();
+		this.panel.setLayout(new BorderLayout());
+		this.labelOperation = new JLabel();
+		this.panel.add(this.labelOperation, BorderLayout.SOUTH);
+		this.panel.setBorder(BorderFactory.createLineBorder(getBackground(), 10));
+		return this.panel;
+	}
+
+	/*
+	 * Metodo: Aciona a acao do respectivo item de menu selecionado
+	 */
+	public void actionPerformed(ActionEvent e) {
+		Options opcoes = Options.valueOf(e.getActionCommand());
+		AbstractPanel panel = null;
+		switch(opcoes){
+		case newPassword:
+			setContentPane(new NewPasswordPanel(this));
+			pack();
+			break;
+		case removePassword:
+			setContentPane(new RemovePasswordPanel(this));
+			pack();
+			break;
+		case removeAllPassword:
+			this.removeAll();
+			break;
+		case about:
+			new DialogoSobre(this);
+			break;
+		case getPassword:
+			setContentPane(new GetPasswordPanel(this));
+			pack();
+		}
+	}
+	
+	/*
+	 * Metodo: Decifra a PK derivada que esta no arquivo (conteudoArq[2]), a partir da senha fornecida no acesso (pk)
+	 */
 	private void decifraDPK() {
 		String pk = this.acesso();
 		try {
@@ -57,10 +122,10 @@ public class MainWindow extends JFrame implements ActionListener{
 
 	/*Esse metodo so e usado na primeira vez, para cifrar a chave que da acesso a tabela 
 	  private void geraChaveDerivada() {
-		  //System.out.println("pK:"+pk);
+		  String pk = this.acesso();
 		try{
-			String senha = "INE56SecPac80";
-			String iv = "3cf39a538794b8364e09f131c16c9b1b";
+			String senha = ""; //Inserir a senha desejada
+			String iv = conteudoArq[1];
 			String senhaDerivada = logica.geraChaveDerivada(senha, conteudoArq[0], interacoes);
 			//System.out.println(senhaDerivada);
 			String senhaFinal = logica.cifraGCM(pk, senhaDerivada, iv);
@@ -69,10 +134,12 @@ public class MainWindow extends JFrame implements ActionListener{
 		}catch(Exception e){
 			e.printStackTrace();
 		}		
-	}
-*/
+	}*/
+
+	/*
+	 * Metodo: Solicita a senha para utilizar o gerenciador
+	 */
 	private String acesso() {
-		//123Seguranca456
 		logica = new Logica();
 		this.interacoes = 10000;
 		String inputSenha, masterKey = "";
@@ -81,7 +148,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		JPasswordField pass = new JPasswordField(10);
 		panel.add(label);
 		panel.add(pass);
-		String[] options = new String[]{"Cancel", "OK"};
+		String[] options = new String[]{"Cancela", "OK"};
 		int option = JOptionPane.showOptionDialog(null, panel, "SENHA GERENCIADOR",
 		                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
 		                         null, options, options[1]);
@@ -96,52 +163,6 @@ public class MainWindow extends JFrame implements ActionListener{
 		
 		return masterKey;
 	}
-
-	public void inicializar(){
-		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		this.setJMenuBar(new MenuBar(this));
-		this.setContentPane(this.getPane());
-		this.setSize(400,200);
-		this.setMinimumSize(new Dimension(400,200));
-		this.setTitle("Secure Password");
-		this.setLocationRelativeTo(null);
-		this.setResizable(false);
-		this.setVisible(true);
-	}
-	
-	private void setInterfaceLayout() {
-		try{
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-		} catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-
-	private JPanel getPane(){
-		this.panel = new JPanel();
-		this.panel.setLayout(new BorderLayout());
-		this.labelOperation = new JLabel();
-		this.panel.add(this.labelOperation, BorderLayout.SOUTH);
-		this.panel.setBorder(BorderFactory.createLineBorder(getBackground(), 10));
-		return this.panel;
-	}
-
-	public void actionPerformed(ActionEvent e) {
-		Options opcoes = Options.valueOf(e.getActionCommand());
-		AbstractPanel panel = null;
-		switch(opcoes){
-		case newPassword:
-			panel = new NewPasswordPanel(this);
-			break;
-		case removePassword:
-			panel = new RemovePasswordPanel(this);
-			break;
-		case getPassword:
-			panel = new GetPasswordPanel(this);
-		}
-		setContentPane(panel);
-		pack();
-	}
 	
 	/*
 	 * Metodo: Abrir o arquivo com a senha mestre cifrada.
@@ -152,7 +173,7 @@ public class MainWindow extends JFrame implements ActionListener{
 	}
 	
 	/*
-	 * Metodo: Abrir o arquivo com a tabela.
+	 * Metodo: Abrir o arquivo que contem a tabela.
 	 */
 	private void abrirArquivoTabela() {
         File arquivo = new File("src/SecPass/arquivos/arquivoTabela.txt");
@@ -222,7 +243,9 @@ public class MainWindow extends JFrame implements ActionListener{
         this.escreveArquivo(arquivo);
 	}
 
-	/* Metodo: Escreve no arquivo, que consta em 'arquivo', o conteudo do texto */
+	/* 
+	 * Metodo: Escreve no arquivo, que consta em 'arquivo', o conteudo do texto 
+	*/
 	private void escreveArquivo(File arquivo) {
 		try{
 			FileOutputStream fos = new FileOutputStream(arquivo); 
@@ -233,21 +256,16 @@ public class MainWindow extends JFrame implements ActionListener{
 		}
 	}
 
+	/* 
+	 * Metodo: Imprime uma mensagem para o usuario 
+	*/
 	public void informaMsg(String msg) {
 		JOptionPane.showMessageDialog(this, msg, "ERRO", JOptionPane.ERROR_MESSAGE);
 	}
 
-
-	public String getTexto() {
-		return texto;
-	}
-
-
-	public void setTexto(String texto) {
-		this.texto = texto;
-	}
-
-
+	/* 
+	 * Metodo: Realiza a cifragem de um item inserido na tabela 
+	*/
 	public void cifra(String dominio, String valor) {
 		String pk = this.acesso();
 		Tabela itemTabela = new Tabela();
@@ -255,7 +273,6 @@ public class MainWindow extends JFrame implements ActionListener{
 			String dpk = logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
 			itemTabela.setChaveCifrada(logica.cifraGCM(dpk, dominio, conteudoArq[1]));
 			itemTabela.setHmac(logica.geraHMAC(itemTabela.getChaveCifrada(), logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this)));
-			//System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);	
 			itemTabela.setValorCifrado(logica.cifraGCM(logica.geraChaveDerivada(itemTabela.getHmac().substring(0, 16), conteudoArq[0], interacoes), valor, conteudoArq[1]));
 			this.tabela.add(itemTabela);
 			salvarArquivoTabela();
@@ -265,6 +282,9 @@ public class MainWindow extends JFrame implements ActionListener{
 		
 	}
 	
+	/* 
+	 * Metodo: Realiza a decifragem de um item da tabela 
+	*/
 	public String decifra(String dominio) {
 		String pk = this.acesso();
 		Tabela itemTabela = null;
@@ -273,22 +293,22 @@ public class MainWindow extends JFrame implements ActionListener{
 			dominio = (logica.cifraGCM(dpk, dominio, conteudoArq[1]));
 			String mac = (logica.geraHMAC(dominio, logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this)));
 			for(Tabela itemTabela1:this.tabela){
-				if(itemTabela1.getHmac().equals(mac))
+				if(itemTabela1.getHmac().equals(mac)){
 					itemTabela=itemTabela1;
+					break;
+				}
 			}
 			if(itemTabela != null)
 				return logica.decifraGCM(logica.geraChaveDerivada(itemTabela.getHmac().substring(0, 16), conteudoArq[0], interacoes), conteudoArq[1], itemTabela.getValorCifrado(), this);
-			//System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);
-			//itemTabela.setValorCifrado(logica.cifraGCM(itemTabela.getHmac().substring(0, 16), valor, conteudoArq[1]));
-			//this.tabela.add(itemTabela);
-			//salvarArquivoTabela();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
-
+	/* 
+	 * Metodo: Realiza a remocao de um item da tabela 
+	*/
 	public boolean remove(String dominio, String valor) {
 		String pk = this.acesso();
 		Tabela itemTabela = new Tabela();
@@ -297,7 +317,6 @@ public class MainWindow extends JFrame implements ActionListener{
 			String dpk = logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this);
 			itemTabela.setChaveCifrada(logica.cifraGCM(dpk, dominio, conteudoArq[1]));
 			itemTabela.setHmac(logica.geraHMAC(itemTabela.getChaveCifrada(), logica.decifraGCM(pk, conteudoArq[1], conteudoArq[2], this)));
-			//System.out.println(itemTabela.getHmac().substring(0, 64).getBytes().length);	
 			itemTabela.setValorCifrado(logica.cifraGCM(logica.geraChaveDerivada(itemTabela.getHmac().substring(0, 16), conteudoArq[0], interacoes), valor, conteudoArq[1]));
 			for(int i=0; i<this.tabela.size(); i++){
 				if(this.tabela.get(i).getValorCifrado().equals(itemTabela.getValorCifrado())){
@@ -311,6 +330,18 @@ public class MainWindow extends JFrame implements ActionListener{
 			e.printStackTrace();
 		}
 		return removido;
+	}
+	
+	/* 
+	 * Metodo: Elimina todos os item da tabela para iniciar uma nova tabela 
+	*/
+	public void removeAll(){
+		int resposta = JOptionPane.showConfirmDialog(this,"Você tem certeza que deseja iniciar uma nova tabela\nObs: Todos os registros serão apagados","INICIAR TABELA", JOptionPane.YES_NO_OPTION);
+		if(resposta==0){
+			this.acesso();
+			this.tabela = new ArrayList<Tabela>();
+			salvarArquivoTabela();
+		}
 	}
 
 }

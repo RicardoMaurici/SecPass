@@ -3,11 +3,9 @@ package SecPass.logica;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
-
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -18,7 +16,6 @@ import org.bouncycastle.crypto.modes.GCMBlockCipher;
 import org.bouncycastle.crypto.params.AEADParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import SecPass.gui.MainWindow;
 
 /**
@@ -30,6 +27,9 @@ import SecPass.gui.MainWindow;
 public class Logica {
 	private static final int MAC_SIZE = 128;
 
+	/* 
+	 * Metodo: gera o Sal que sera utilizado na derivacao de senha
+	*/
 	public String geraSalt() {
 		SecureRandom sr;
 		byte[] salt = null;
@@ -44,6 +44,9 @@ public class Logica {
 		return Hex.encodeHexString(salt);
 	}
 
+	/* 
+	 * Metodo: gera o HMac usando o parametro chaveDerivada para chave do HMac e a entradaCifrada para entrada do HMac
+	*/
 	public String geraHMAC(String entradaCifrada, String chaveDerivada) {
 		String tag = "";
 		try {
@@ -73,26 +76,22 @@ public class Logica {
 			// Define a entrada para o HMac
 			umHmac.update(entrada, 0, entrada.length);
 
-			// Define o buffer para colocar o resultado do HMac, saida é a tag
+			// Define o buffer para colocar o resultado do HMac, saida ï¿½ a tag
 			umHmac.doFinal(saida, 0);
 
-			//System.out.println("Mensagem 1 = " + Hex.encodeHexString(input));
 			//converte tag
 			tag = new String(Hex.encodeHex(saida));
-			//System.out.println("HMAC da Mensagem 1 = "+ new String(Hex.encodeHex(resBuf1)));
 		} catch (DecoderException e) {
 			e.printStackTrace();
 		}
-
 		return tag;
-
 	}
 
 	/* 
 	 * Metodo: deriva a chave passada como parametro. Passa tambem o sal e o numero de 
 	 * iteracoes como parametro para derivar a chava
 	*/
-	public static String geraChaveDerivada(String senha, String sal, Integer iteracoes) {
+	public String geraChaveDerivada(String senha, String sal, Integer iteracoes) {
 		PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), sal.getBytes(), iteracoes, 128);
 		SecretKeyFactory pbkdf2 = null;
 		String senhaDerivada = null;
@@ -106,49 +105,49 @@ public class Logica {
 		return senhaDerivada;
 	}
 
+	/* 
+	 * Metodo: cifra o texto plano com GCM
+	*/
 	public String cifraGCM(String pK, String textoPlano, String iv) throws DecoderException {
 		//Recebe senha
-		byte[] K = org.apache.commons.codec.binary.Hex.decodeHex(pK.toCharArray());
+		byte[] chave = org.apache.commons.codec.binary.Hex.decodeHex(pK.toCharArray());
 		//Recebe texto que deseja cifrar
-		byte[] P = textoPlano.getBytes(); // Msg de entrada
+		byte[] plano = textoPlano.getBytes(); // Msg de entrada
 		//IV
-		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
+		byte[] ivB = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
 
 		// Instancia um GCM com AES usando o formato da BouncyCastle
 		GCMBlockCipher gcm = new GCMBlockCipher(new AESEngine());
 
-		// Parametros a passados para o GCM: chave, tamanho do mac, iv em bytes
-		KeyParameter key2 = new KeyParameter(K);
-		AEADParameters params = new AEADParameters(key2, MAC_SIZE, N);
+		// Parametros passados para o GCM: chave, tamanho do mac, iv em bytes
+		KeyParameter chave2 = new KeyParameter(chave);
+		AEADParameters parametros = new AEADParameters(chave2, MAC_SIZE, ivB);
 
 		// cifrando
-		gcm.init(true, params);
-		int outsize = gcm.getOutputSize(P.length);
-		byte[] outc = new byte[outsize];
+		gcm.init(true, parametros);
+		int tamanhoSaida = gcm.getOutputSize(plano.length);
+		byte[] saida = new byte[tamanhoSaida];
 		
 		// processa os bytes calculando o offset para cifrar
-		int lengthOutc = gcm.processBytes(P, 0, P.length, outc, 0);
+		int offset = gcm.processBytes(plano, 0, plano.length, saida, 0);
 
 		try {
 			// cifra os bytes
-			gcm.doFinal(outc, lengthOutc);
+			gcm.doFinal(saida, offset);
 		} catch (InvalidCipherTextException e) {
 			e.printStackTrace();
 		}
-
-		//System.out.println("Senha cifrada = \t\t\t" + Hex.encodeHexString(outc));
-
-		// Recupera tag do GCM
-		byte[] encT1 = gcm.getMac();
-		//System.out.println("Tag msg cifrada = \t\t" + Hex.encodeHexString(encT1));
 		
-		return Hex.encodeHexString(outc);
+		return Hex.encodeHexString(saida);
 
 	}
 
+	/* 
+	 * Metodo: decifra o texto cifrado com GCM
+	*/
 	public String decifraGCM(String pK, String iv, String textoCifrado, MainWindow ui) throws Exception {
 		// IV
-		byte[] N = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
+		byte[] iv2 = org.apache.commons.codec.binary.Hex.decodeHex(iv.toCharArray());
 		
 		//texto que e para decifrar
 		byte[] txtCifrado = org.apache.commons.codec.binary.Hex.decodeHex(textoCifrado.toCharArray());
@@ -156,25 +155,23 @@ public class Logica {
 		GCMBlockCipher gcm = new GCMBlockCipher(new AESEngine());
 
 		// Parametros passados para o GCM: chave, tamanho do mac, o IV
-		KeyParameter key2 = new KeyParameter(Hex.decodeHex(pK.toCharArray()));
-		AEADParameters params = new AEADParameters(key2, MAC_SIZE, N);
+		KeyParameter chave2 = new KeyParameter(Hex.decodeHex(pK.toCharArray()));
+		AEADParameters parametros = new AEADParameters(chave2, MAC_SIZE, iv2);
 
 		// Aciona o decifrar do gcm - false para decifrar
-		gcm.init(false, params);
+		gcm.init(false, parametros);
 
-		int outsize2 = gcm.getOutputSize(txtCifrado.length);
-		byte[] out2 = new byte[outsize2];
-		int offOut2 = gcm.processBytes(txtCifrado, 0, txtCifrado.length,
-				out2, 0);
+		int tamanhoSaida = gcm.getOutputSize(txtCifrado.length);
+		byte[] saida = new byte[tamanhoSaida];
+		int temp = gcm.processBytes(txtCifrado, 0, txtCifrado.length,
+				saida, 0);
 		try {
-			gcm.doFinal(out2, offOut2);
+			gcm.doFinal(saida, temp);
 
 		} catch (InvalidCipherTextException e) {
-			ui.informaMsg("Senha inválida");
+			ui.informaMsg("Senha invÃ¡lida");
 			System.exit(0);
 		}
-
-		//System.out.println("Msg decifrada = \t\t" + (Hex.encodeHexString(out2)));
-		return new String(out2);
+		return new String(saida);
 	}
 }
